@@ -1,5 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
+import { utils } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import { XNft, XYZ } from "typechain";
 
@@ -28,26 +29,31 @@ describe("xNFT", () => {
   });
 
   it("should allow mint if the user provides enough XYZ token", async () => {
-    await xyzToken.transfer(minter.address, "100");
-    await xyzToken.connect(minter).approve(xNFT.address, "100");
+    const amount = utils.parseEther("100");
+    await xyzToken.transfer(minter.address, amount);
+    await xyzToken.connect(minter).approve(xNFT.address, amount);
     await expect(xNFT.mintTransfer(minter.address, "wow", "whoops"))
       .to.emit(xNFT, "XNftMinted")
       .withArgs(minter.address, 1);
   });
 
   it("should increase fee gradually based on the scale", async () => {
-    await xyzToken.transfer(minter.address, "1000");
-    await xyzToken.connect(minter).approve(xNFT.address, "100");
+    await xyzToken.transfer(minter.address, utils.parseEther("1000"));
+    await xyzToken
+      .connect(minter)
+      .approve(xNFT.address, utils.parseEther("100"));
     await expect(xNFT.mintTransfer(minter.address, "wow", "whoops"))
       .to.emit(xNFT, "XNftMinted")
       .withArgs(minter.address, 1);
 
-    await xyzToken.connect(minter).approve(xNFT.address, "103");
+    await xyzToken
+      .connect(minter)
+      .approve(xNFT.address, utils.parseEther("103"));
     await expect(xNFT.mintTransfer(minter.address, "wow 2", "whoops 2"))
       .to.emit(xNFT, "XNftMinted")
       .withArgs(minter.address, 2);
 
     const balance = await xyzToken.balanceOf(minter.address);
-    expect(balance).to.equal("797");
+    expect(balance).to.equal(utils.parseEther("797"));
   });
 });

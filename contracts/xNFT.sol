@@ -46,7 +46,7 @@ contract XNft is
         // Making sure we start at token ID 1
         tokenIdCounter.increment();
         xyzToken = _xyzToken;
-        setCurrentFee(100);
+        setCurrentFee(100 ether);
         setIncreaseScale(3);
     }
 
